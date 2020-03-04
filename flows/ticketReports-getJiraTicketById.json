@@ -156,7 +156,7 @@
 				{
 					"name": "code",
 					"type": "string",
-					"value": "\"// Isolate Sprint name from long string\\n  sprints = data.fields.customfield_11730;\\n  sprint_names = [];\\n  \\n  for (var sprint in sprints) {\\n    sprint_names.push(sprint);\\n  }\\n  \\n  var jiraticket =\\n      {\\n        key: data.key,\\n        issue_type: data.fields.issuetype.name,\\n    \\tsummary:data.fields.summary,\\n    \\tstatus:data.fields.status.name,\\n    \\tresolution:data.fields.resolution,\\n    \\tapi_team:data.fields.customfield_12332.value,\\n    \\taffects_versions: data.fields.versions,\\n    \\tfix_versions: data.fields.fixVersions,\\n    \\tassignee: data.fields.assignee.displayName,\\n    \\tsprint: sprint_names,\\n    \\tseverity: data.fields.customfield_12136.value,\\n    \\tupdated: data.fields.updated,\\n    \\tcreated: data.fields.created,\\n    \\tpriority: data.fields.priority.name,\\n    \\tstory_points: data.fields.customfield_10330,\\n    \\tcreator: data.fields.creator.displayName,\\n    \\tlabels: data.fields.labels,\\n    \\tcvss_score: data.fields.customfield_13031\\n      };\\n  \\n  return data;\"",
+					"value": "\"// Isolate Sprint name from long string\\n  let sprintNames = [];\\n  if (data.fields.customfield_11730 != null) {\\n    sprintNames = data.fields.customfield_11730.map(sprint => {\\n    \\tsecond_half = sprint.split(\\\",name=\\\")[1]; // We just want the \\\"name\\\" field\\n\\t\\tlet sprintName = second_half.split(\\\",startDate\\\")[0]; // Assuming the order is always the same\\n\\t\\treturn sprintName;\\n  \\t});\\n  }\\n  \\n  let fixVersionNames = [];\\n  // Get the names only\\n  if (data.fields.fixVersions != null) {\\n    fixVersionNames = data.fields.fixVersions.map(fixVersion => {\\n\\t\\tlet fixVersionName = fixVersion.name;\\n\\t\\treturn fixVersionName;\\n  \\t});\\n  }\\n  \\n  // API Team can be null\\n  if (data.fields.customfield_12332 != null) {\\n  \\tapi_team = data.fields.customfield_12332.value || \\\"\\\";\\n  } else {\\n    api_team = \\\"\\\";\\n  }\\n  \\n  // API Team can be null\\n  if (data.fields.customfield_12136 != null) {\\n  \\tseverity = data.fields.customfield_12136.value || \\\"\\\";\\n  } else {\\n    severity = \\\"\\\";\\n  }\\n  \\n  // Assignee can be null\\n  if (data.fields.assignee != null) {\\n    assignee = data.fields.assignee.displayName;\\n  } else {\\n    assignee = \\\"\\\";\\n  }\\n  \\n  // Creator can be null?\\n  if (data.fields.creator != null) {\\n    creator = data.fields.creator.displayName;\\n  } else {\\n    creator = \\\"\\\";\\n  }\\n      \\n  if (data.fields.resolution != null) {\\n    resolution = data.fields.resolution.name;\\n  } else {\\n    resolution = \\\"\\\";\\n  }\\n  \\n  // Build response\\n  var jiraticket =\\n      {\\n        key: data.key,\\n        issue_type: data.fields.issuetype.name,\\n    \\tsummary: data.fields.summary,\\n    \\tstatus: data.fields.status.name,\\n    \\tresolution: resolution,\\n    \\tapi_team: api_team,\\n    \\taffects_versions: data.fields.versions,\\n    \\tfix_versions: fixVersionNames,\\n    \\tassignee: assignee,\\n    \\tsprint: sprintNames,\\n    \\tseverity: severity,\\n    \\tupdated: data.fields.updated,\\n    \\tcreated: data.fields.created,\\n    \\tpriority: data.fields.priority.name,\\n    \\tstory_points: data.fields.customfield_10330,\\n    \\tcreator: creator,\\n    \\tlabels: data.fields.labels,\\n    \\tcvss_score: data.fields.customfield_13031\\n      };\\n  \\n  return jiraticket;\"",
 					"metaName": "code",
 					"metaDescription": "A JavaScript function body. Supports `await` and returning promises"
 				}
@@ -171,7 +171,9 @@
 				},
 				"error": {
 					"context": "$.error",
-					"routes": [],
+					"routes": [
+						"http.2"
+					],
 					"metaName": "Error"
 				}
 			},
