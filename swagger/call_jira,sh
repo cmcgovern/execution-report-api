@@ -1,0 +1,16 @@
+#!/bin/bash
+
+USERNAME="cmcgovern"
+#PASSWORD="P!neW0)D"
+PASSWORD="cx2eEDaksJLr"
+
+URL="https://techweb.axway.com/jira/rest/api/latest"
+ISSUE="issue"
+TICKET="RDPP-6261"
+
+CURL_URL="$URL/$ISSUE/$TICKET"
+
+echo "curl -X GET -u $CURL_URL"
+echo
+echo
+curl -X GET -u $USERNAME:$PASSWORD $CURL_URL

@@ -1,0 +1,181 @@
+{
+	"schemaVersion": "4",
+	"info": {
+		"name": "ticketReports - get /jiraticket/{key}"
+	},
+	"parameter": {
+		"properties": {
+			"params": {
+				"type": "object",
+				"description": "The parameters from the endpoint."
+			},
+			"request": {
+				"type": "object",
+				"description": "The HTTP request."
+			},
+			"config": {
+				"type": "object",
+				"description": "The service's configuration"
+			},
+			"env": {
+				"type": "object",
+				"description": "The host OS environment"
+			}
+		},
+		"additionalProperties": false,
+		"required": [
+			"params",
+			"request",
+			"config",
+			"env"
+		]
+	},
+	"start": "jira-swagger-v3.1",
+	"nodes": {
+		"jira-swagger-v3.1": {
+			"type": "nodehandler://@axway/api-builder-plugin-fn-swagger/jira-swagger-v3",
+			"name": "issue.IssueResource.getIssue_get",
+			"method": "issue.IssueResource.getIssue_get",
+			"parameters": [
+				{
+					"name": "issueIdOrKey",
+					"type": "jsonpath",
+					"value": "$.params.key",
+					"metaName": "issueIdOrKey"
+				}
+			],
+			"outputs": {
+				"200": {
+					"routes": [
+						"javascript.1"
+					],
+					"context": "$.issue_details",
+					"metaName": "200"
+				},
+				"401": {
+					"routes": [
+						"http.2"
+					],
+					"context": "$.response",
+					"metaName": "401"
+				},
+				"404": {
+					"routes": [
+						"http.2"
+					],
+					"context": "$.response",
+					"metaName": "404"
+				},
+				"error": {
+					"routes": [
+						"http.2"
+					],
+					"context": "$.error",
+					"metaName": "Error"
+				},
+				"default": {
+					"routes": [
+						"http.2"
+					],
+					"context": "$.response",
+					"metaName": "Default"
+				}
+			},
+			"authorizations": [
+				{
+					"name": "basicAuth",
+					"type": "credential",
+					"value": "jira_basic"
+				}
+			],
+			"metaMethod": "issue.IssueResource.getIssue_get"
+		},
+		"http.1": {
+			"type": "nodehandler://axway-flow/http",
+			"name": "Success",
+			"method": "setresponse",
+			"parameters": [
+				{
+					"name": "status",
+					"type": "number",
+					"value": "200",
+					"metaName": "status",
+					"metaDescription": "The HTTP status code"
+				},
+				{
+					"name": "body",
+					"type": "jsonpath",
+					"value": "$.fixed_data",
+					"metaName": "body",
+					"metaDescription": "The response payload"
+				}
+			],
+			"outputs": {
+				"next": {
+					"context": "$.response",
+					"routes": [],
+					"metaName": "Next"
+				}
+			},
+			"metaMethod": "Set HTTP Response"
+		},
+		"http.2": {
+			"type": "nodehandler://axway-flow/http",
+			"name": "Failure",
+			"method": "setresponse",
+			"parameters": [
+				{
+					"name": "status",
+					"type": "number",
+					"value": "500",
+					"metaName": "status",
+					"metaDescription": "The HTTP status code"
+				}
+			],
+			"outputs": {
+				"next": {
+					"context": "$.response",
+					"routes": [],
+					"metaName": "Next"
+				}
+			},
+			"metaMethod": "Set HTTP Response"
+		},
+		"javascript.1": {
+			"type": "nodehandler://@axway/api-builder-plugin-fn-javascript/javascript",
+			"name": "Fix Sprint Name",
+			"method": "Execute",
+			"parameters": [
+				{
+					"name": "data",
+					"type": "jsonpath",
+					"value": "$.issue_details.data",
+					"metaName": "data",
+					"metaDescription": "The value to apply as the `data` argument to the JavaScript code. For objects and arrays, `data` is passed by reference."
+				},
+				{
+					"name": "code",
+					"type": "string",
+					"value": "\"// Isolate Sprint name from long string\\n  sprints = data.fields.customfield_11730;\\n  sprint_names = [];\\n  \\n  for (var sprint in sprints) {\\n    sprint_names.push(sprint);\\n  }\\n  \\n  var jiraticket =\\n      {\\n        key: data.key,\\n        issue_type: data.fields.issuetype.name,\\n    \\tsummary:data.fields.summary,\\n    \\tstatus:data.fields.status.name,\\n    \\tresolution:data.fields.resolution,\\n    \\tapi_team:data.fields.customfield_12332.value,\\n    \\taffects_versions: data.fields.versions,\\n    \\tfix_versions: data.fields.fixVersions,\\n    \\tassignee: data.fields.assignee.displayName,\\n    \\tsprint: sprint_names,\\n    \\tseverity: data.fields.customfield_12136.value,\\n    \\tupdated: data.fields.updated,\\n    \\tcreated: data.fields.created,\\n    \\tpriority: data.fields.priority.name,\\n    \\tstory_points: data.fields.customfield_10330,\\n    \\tcreator: data.fields.creator.displayName,\\n    \\tlabels: data.fields.labels,\\n    \\tcvss_score: data.fields.customfield_13031\\n      };\\n  \\n  return data;\"",
+					"metaName": "code",
+					"metaDescription": "A JavaScript function body. Supports `await` and returning promises"
+				}
+			],
+			"outputs": {
+				"next": {
+					"context": "$.fixed_data",
+					"routes": [
+						"http.1"
+					],
+					"metaName": "Next"
+				},
+				"error": {
+					"context": "$.error",
+					"routes": [],
+					"metaName": "Error"
+				}
+			},
+			"metaMethod": "Execute"
+		}
+	}
+}

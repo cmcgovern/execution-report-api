@@ -1,0 +1,163 @@
+{
+	"schemaVersion": "4",
+	"info": {
+		"name": "Greet flow",
+		"description": "Greets a user",
+		"author": "support@axway.com",
+		"license": "ISC"
+	},
+	"parameter": {
+		"properties": {
+			"params": {
+				"type": "object",
+				"description": "The parameters from the endpoint.",
+				"properties": {
+					"username": {
+						"type": "string",
+						"description": "The username"
+					}
+				},
+				"additionalProperties": false,
+				"required": [
+					"username"
+				]
+			},
+			"request": {
+				"type": "object",
+				"description": "The HTTP request."
+			},
+			"config": {
+				"type": "object",
+				"description": "The service's configuration"
+			},
+			"env": {
+				"type": "object",
+				"description": "The host OS environment"
+			}
+		},
+		"additionalProperties": false,
+		"required": [
+			"params",
+			"request",
+			"config",
+			"env"
+		]
+	},
+	"start": "jira-swagger-v3.1",
+	"nodes": {
+		"response.success": {
+			"type": "nodehandler://axway-flow/http",
+			"name": "Success (HTTP 200)",
+			"method": "setresponse",
+			"parameters": [
+				{
+					"name": "status",
+					"value": "200",
+					"type": "number",
+					"metaName": "status",
+					"metaDescription": "The HTTP status code"
+				},
+				{
+					"name": "body",
+					"type": "jsonpath",
+					"value": "$.issue",
+					"metaName": "body",
+					"metaDescription": "The response payload"
+				}
+			],
+			"outputs": {
+				"next": {
+					"context": "$.response",
+					"metaName": "Next"
+				}
+			},
+			"metaMethod": "Set HTTP Response"
+		},
+		"response.error": {
+			"type": "nodehandler://axway-flow/http",
+			"name": "Bad Request (HTTP 400)",
+			"method": "setresponse",
+			"parameters": [
+				{
+					"name": "status",
+					"value": "400",
+					"type": "number",
+					"metaName": "status",
+					"metaDescription": "The HTTP status code"
+				},
+				{
+					"name": "body",
+					"type": "jsonpath",
+					"value": "$",
+					"metaName": "body",
+					"metaDescription": "The response payload"
+				}
+			],
+			"outputs": {
+				"next": {
+					"context": "$.response",
+					"metaName": "Next"
+				}
+			},
+			"metaMethod": "Set HTTP Response"
+		},
+		"jira-swagger-v3.1": {
+			"type": "nodehandler://@axway/api-builder-plugin-fn-swagger/jira-swagger-v3",
+			"name": "issue.IssueResource.getIssue_get",
+			"method": "issue.IssueResource.getIssue_get",
+			"parameters": [
+				{
+					"name": "issueIdOrKey",
+					"type": "string",
+					"value": "\"RDPP-6261\"",
+					"metaName": "issueIdOrKey"
+				}
+			],
+			"outputs": {
+				"200": {
+					"routes": [
+						"response.success"
+					],
+					"context": "$.issue",
+					"metaName": "200"
+				},
+				"401": {
+					"routes": [
+						"response.error"
+					],
+					"context": "$.response",
+					"metaName": "401"
+				},
+				"404": {
+					"routes": [
+						"response.error"
+					],
+					"context": "$.response",
+					"metaName": "404"
+				},
+				"error": {
+					"routes": [
+						"response.error"
+					],
+					"context": "$.error",
+					"metaName": "Error"
+				},
+				"default": {
+					"routes": [
+						"response.error"
+					],
+					"context": "$.response",
+					"metaName": "Default"
+				}
+			},
+			"authorizations": [
+				{
+					"name": "basicAuth",
+					"type": "credential",
+					"value": "jira_basic"
+				}
+			],
+			"metaMethod": "issue.IssueResource.getIssue_get"
+		}
+	}
+}
